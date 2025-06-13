@@ -140,7 +140,28 @@ class FileDownloadClient:
                     if response_data:
                         return response_data.decode('utf-8').strip()
                 except socket.timeout:
-                    pass  # 超时未收到响应，进入重试流程                     
+                    pass  # 超时未收到响应，进入重试流程 
+                 # 重试逻辑
+                retry_count += 1
+                if retry_count > MAX_RETRY_TIMES:
+                    print(f"[客户端重试] 达到最大重试次数{MAX_RETRY_TIMES}，当前超时{current_timeout}秒")
+                    return None
+                
+                # 指数退避策略
+                current_timeout = min(current_timeout * 2, 32)  # 超时上限32秒
+                print(f"[客户端重试] 未收到响应，将在{current_timeout}秒后重试（第{retry_count}次）")
+                time.sleep(current_timeout)
+                
+            except socket.error as socket_err:
+                print(f"[客户端错误] 网络操作失败: {str(socket_err)}")
+                retry_count += 1
+                if retry_count <= MAX_RETRY_TIMES:
+                    time.sleep(current_timeout)
+                else:
+                    return None
+        
+        return None
+                    
 
 
             
