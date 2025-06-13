@@ -162,6 +162,26 @@ class FileDownloadClient:
         
         return None
                     
+def execute_client():
+    if len(sys.argv) != 4:
+        print("使用方法: python client_script.py <服务器主机名> <服务器端口> <文件列表路径>")
+        print("示例: python client_script.py localhost 51234 files.txt")
+        sys.exit(1)
+    
+    server_host = sys.argv[1]
+    server_port = int(sys.argv[2])
+    file_list = sys.argv[3]
+    
+    try:
+        client = FileDownloadClient(server_host, server_port, file_list)
+        client.start_download()
+    except Exception as global_err:
+        print(f"[客户端崩溃] 程序异常终止: {str(global_err)}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    execute_client()                    
 
 
             
