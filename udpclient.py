@@ -31,3 +31,40 @@ class FileDownloadClient:
                 if target_file:
                     self.fetch_single_file(target_file)
 
+        
+
+    def fetch_single_file(self, file_name):
+        """单个文件完整下载流程"""
+        print(f"[客户端操作] 开始下载文件: {file_name}")
+        
+        # 发送下载请求并获取响应
+        download_cmd = f"DOWNLOAD {file_name}"
+        server_reply = self.communicate_with_server(download_cmd, self.server_address)
+        if not server_reply:
+            print(f"[客户端错误] 下载失败: 未收到服务器响应")
+            return
+        
+         # 响应结果解析
+        if server_reply.startswith("ERR"):
+            print(f"[客户端错误] 服务器返回错误: {server_reply}")
+            return
+        if not server_reply.startswith("OK"):
+            print(f"[客户端错误] 未知响应格式: {server_reply}")
+            return
+        
+        try:
+            # 提取文件大小和数据端口
+            size_result = re.search(r"SIZE (\d+)", server_reply)
+            port_result = re.search(r"PORT (\d+)", server_reply)
+            if not size_result or not port_result:
+                print(f"[客户端错误] 响应格式异常: {server_reply}")
+                return
+            
+            file_total_size = int(size_result.group(1))
+            data_transfer_port = int(port_result.group(1))
+            data_address = (self.server_host, data_transfer_port)
+            print(f"[客户端信息] 文件大小: {file_total_size} 字节，数据端口: {data_transfer_port}")
+        
+        
+        
+        
