@@ -80,4 +80,20 @@ def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('0.0.0.0', server_port))
     print(f"Server started on port {server_port}")
+
+    try:
+        while True:
+            request, client_addr = server_socket.recvfrom(4096)
+            request = request.decode('utf-8')
+            if request.startswith("DOWNLOAD"):
+                filename = request[9:].strip()
+                handler = ClientHandler(client_addr, filename, server_port)
+                handler.start()
+    except KeyboardInterrupt:
+        print("Server shutting down...")
+    finally:
+        server_socket.close()
+
+if __name__ == "__main__":
+    main()
     
