@@ -64,7 +64,38 @@ class FileDownloadClient:
             data_transfer_port = int(port_result.group(1))
             data_address = (self.server_host, data_transfer_port)
             print(f"[客户端信息] 文件大小: {file_total_size} 字节，数据端口: {data_transfer_port}")
-            
+
+            # 文件分块下载逻辑
+            with open(file_name, 'wb') as file_writer:
+                downloaded_bytes = 0
+                chunk_start = 0
+                chunk_size = 1000  # 与服务端保持一致的分块大小
+                while downloaded_bytes < file_total_size:
+                    chunk_end = min(chunk_start + chunk_size - 1, file_total_size - 1)
+                    # 构造数据块请求
+                    block_request = f"FILE {file_name} GET {chunk_start} {chunk_end}"
+                    block_reply = self.communicate_with_server(block_request, data_address)
+                    
+                    if not block_reply:
+                        print(f"[客户端错误] 数据块请求失败: 起始{chunk_start}, 结束{chunk_end}")
+                        break
+
+                    # 解析数据响应
+                    if not block_reply.startswith(f"FILE {file_name} OK"):
+                        print(f"[客户端错误] 无效数据响应: {block_reply}")
+                        continue
+                    
+                    # 提取并解码文件数据
+                    data_match = re.search(r"DATA (.+)$", block_reply, re.DOTALL)
+                    if not data_match:
+                        print(f"[客户端错误] 数据格式错误: {block_reply}")
+                        continue
+                    
+                    base64_encoded = data_match.group(1)
+                    try:
+                        decoded_data = base64.b64decode(base64_encoded)
+                        file_writer.write(decoded_data)
+                        downloaded_bytes += len(decoded_data)
         
         
         
