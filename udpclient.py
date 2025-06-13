@@ -109,6 +109,20 @@ class FileDownloadClient:
                     chunk_start = chunk_end + 1
 
                 print("\n[客户端进度] 下载进度: 100%")
+    # 发送关闭连接请求
+            close_cmd = f"FILE {file_name} CLOSE"
+            close_response = self.communicate_with_server(close_cmd, data_address)
+            
+            if close_response and close_response.startswith(f"FILE {file_name} CLOSE_OK"):
+                print(f"[客户端完成] 下载完成: {file_name}")
+            else:
+                print(f"[客户端警告] 关闭连接异常，可能未收到确认响应")
+                
+        except Exception as download_err:
+            print(f"[客户端错误] 下载过程异常: {str(download_err)}")
+            if os.path.exists(file_name):
+                os.remove(file_name)  # 清理不完整文件          
+                  
 
             
         
