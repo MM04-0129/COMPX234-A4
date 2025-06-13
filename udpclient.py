@@ -121,8 +121,27 @@ class FileDownloadClient:
         except Exception as download_err:
             print(f"[客户端错误] 下载过程异常: {str(download_err)}")
             if os.path.exists(file_name):
-                os.remove(file_name)  # 清理不完整文件          
-                  
+                os.remove(file_name)  # 清理不完整文件
+
+    def communicate_with_server(self, msg, target_address):
+        """处理与服务器的收发逻辑（含超时重试）"""
+        retry_count = 0
+        current_timeout = INIT_TIMEOUT
+        
+        while retry_count <= MAX_RETRY_TIMES:
+            try:
+                self.udp_socket.settimeout(current_timeout)
+                # 发送数据
+                self.udp_socket.sendto(msg.encode('utf-8'), target_address)
+                
+                # 尝试接收响应
+                try:
+                    response_data, _ = self.udp_socket.recvfrom(65536)
+                    if response_data:
+                        return response_data.decode('utf-8').strip()
+                except socket.timeout:
+                    pass  # 超时未收到响应，进入重试流程                     
+
 
             
         
