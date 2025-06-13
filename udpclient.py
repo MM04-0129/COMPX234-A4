@@ -44,7 +44,7 @@ class FileDownloadClient:
             print(f"[客户端错误] 下载失败: 未收到服务器响应")
             return
         
-         # 响应结果解析
+           # 响应结果解析
         if server_reply.startswith("ERR"):
             print(f"[客户端错误] 服务器返回错误: {server_reply}")
             return
@@ -64,7 +64,7 @@ class FileDownloadClient:
             data_transfer_port = int(port_result.group(1))
             data_address = (self.server_host, data_transfer_port)
             print(f"[客户端信息] 文件大小: {file_total_size} 字节，数据端口: {data_transfer_port}")
-        
+            
         
         
         
