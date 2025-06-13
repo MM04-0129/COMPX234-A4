@@ -96,6 +96,21 @@ class FileDownloadClient:
                         decoded_data = base64.b64decode(base64_encoded)
                         file_writer.write(decoded_data)
                         downloaded_bytes += len(decoded_data)
+                        # 进度显示逻辑
+                        progress_percent = int(downloaded_bytes / file_total_size * 50)
+                        progress_bar = '#' * progress_percent + '-' * (50 - progress_percent)
+                        print(f"[客户端进度] 下载进度: [{progress_bar}] {downloaded_bytes}/{file_total_size}字节", end='\r')
+                    except Exception as decode_err:
+                        print(f"[客户端错误] 数据解码失败: {str(decode_err)}")
+                        break
+                    
+                    if chunk_end >= file_total_size - 1:
+                        break  # 最后一块数据
+                    chunk_start = chunk_end + 1
+
+                print("\n[客户端进度] 下载进度: 100%")
+
+            
         
         
         
